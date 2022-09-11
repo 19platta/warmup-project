@@ -14,7 +14,6 @@ def getKey():
     tty.setraw(sys.stdin.fileno())
     select.select([sys.stdin], [], [], 0)
     key = sys.stdin.read(1)
-    print('key -----', key)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 
@@ -30,16 +29,11 @@ class SendTwist(Node):
 
 
     def run_loop(self):
-        run = 0
         while self.key != '\x03':
-            print("run ------ ", run)
-            run += 1
             linear = Vector3(x=0.0,y=0.0,z=0.0)
             angular = Vector3(x=0.0,y=0.0,z=0.0)
             self.key = getKey()
             print(self.key)
-            if self.key == '\x32' or self.key == '\x00' or self.key == None:
-                print('AHHHHHHH')
             if self.key == 'w':
                 linear.x = 1.0
             if self.key == 's':
