@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'messenger = warmup_project.messenger:main'
+            'messenger = warmup_project.messenger:main',
+            'messenger_two = warmup_project.messenger_two:main'
         ],
     },
 )

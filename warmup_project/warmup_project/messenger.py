@@ -27,9 +27,9 @@ class SendMessageNode(Node):
 
         marker.type = Marker.SPHERE
         marker.action = Marker.ADD
-        marker.pose.position.x = 1.0
-        marker.pose.position.y = 1.0
-        marker.pose.position.z = 1.0
+        marker.pose.position.x = 5.0
+        marker.pose.position.y = 5.0
+        marker.pose.position.z = 5.0
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
