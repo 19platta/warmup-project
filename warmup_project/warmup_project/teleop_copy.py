@@ -27,19 +27,17 @@ class SendTwist(Node):
         self.timer = self.create_timer(timer_period, self.run_loop)
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
         self.key = None
+        self.key_updated = 0
+
+    def update_key(self, key):
+        key_updated = 1
 
 
     def run_loop(self):
-        run = 0
-        while self.key != '\x03':
-            print("run ------ ", run)
-            run += 1
-            linear = Vector3(x=0.0,y=0.0,z=0.0)
-            angular = Vector3(x=0.0,y=0.0,z=0.0)
-            self.key = getKey()
-            print(self.key)
-            if self.key == '\x32' or self.key == '\x00' or self.key == None:
-                print('AHHHHHHH')
+        
+        linear = Vector3(x=0.0,y=0.0,z=0.0)
+        angular = Vector3(x=0.0,y=0.0,z=0.0)
+        if self.key_updated:
             if self.key == 'w':
                 linear.x = 1.0
             if self.key == 's':
@@ -48,9 +46,9 @@ class SendTwist(Node):
                 angular.z =1.0
             if self.key == 'd':
                 angular.z = -1.0
-
-            cmd_vel = Twist(linear=linear,angular=angular)
-            self.publisher.publish(cmd_vel)
+            self.key_updated = 0
+        cmd_vel = Twist(linear=linear,angular=angular)
+        self.publisher.publish(cmd_vel)
 
 
 
@@ -60,6 +58,11 @@ def main(args=None):
     rclpy.init(args=args)      # Initialize communication with ROS
     node = SendTwist()   # Create our Node
     rclpy.spin(node)           # Run the Node until ready to shutdown
+    while key != '\x03':
+        print('test test')
+        key = getKey()
+        print(key)
+        node.update_key(key)
     rclpy.shutdown()           # cleanup
 
 
