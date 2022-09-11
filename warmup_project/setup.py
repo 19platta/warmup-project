@@ -22,7 +22,9 @@ setup(
         'console_scripts': [
             'messenger = warmup_project.messenger:main',
             'messenger_two = warmup_project.messenger_two:main',
-            'drive_n_stop = warmup_project.drive_n_stop:main'
+            'drive_n_stop = warmup_project.drive_n_stop:main',
+            'teleop = warmup_project.teleop:main'
+
         ],
     },
 )
