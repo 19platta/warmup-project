@@ -4,7 +4,8 @@ from sensor_msgs.msg import LaserScan
 import rclpy
 from rclpy.node import Node
 
-turn_multiplier = 1.25
+turn_multiplier = 5
+angle_from_perp = 10
 
 class SendTwist(Node):
     def __init__(self):
@@ -22,8 +23,12 @@ class SendTwist(Node):
     def run_loop(self):
         #should have a check for if dont see the wall here
         try:
-            turn_angle = float(self.front_dist - self.back_dist)*turn_multiplier
-            print('turn ang ', turn_angle)
+            print(self.front_dist, self.back_dist, "front, bakc")
+            if self.front_dist != 0 and self.back_dist != 0:
+                turn_angle = float(-1*self.front_dist + self.back_dist)*turn_multiplier
+                print('turn ang ', turn_angle)
+            else:
+                turn_angle=0.0
         except:
             turn_angle = 0.0
         linear = Vector3(x=0.15,y=0.0,z=0.0)
@@ -33,8 +38,8 @@ class SendTwist(Node):
         self.publisher.publish(cmd_vel)
 
     def get_laser(self,msg):
-        self.front_dist = msg.ranges[270+45]
-        self.back_dist = msg.ranges[270-45]
+        self.front_dist = msg.ranges[270+angle_from_perp]
+        self.back_dist = msg.ranges[270-angle_from_perp]
 
 
 def main(args=None):
