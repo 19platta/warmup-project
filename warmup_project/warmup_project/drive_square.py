@@ -10,6 +10,8 @@ from rclpy.node import Node
 SPEED = 1.0
 ROTATION_SPEED = -0.5
 
+import math
+ 
 class Square(Node):
     def __init__(self):
         super().__init__('send_message_node')
@@ -21,13 +23,13 @@ class Square(Node):
         self.subscriber = self.create_subscription(Odometry, 'odom', self.get_Odom, 10)
         self.side_counter = 0
         self.start_position = Point(x=0.0, y=0.0, z=0.0)
-        self.start_orientation = Quaternion(w=0.0, x=0.0, y=0.0, z=0.0)
+        self.start_orientation = euler_from_quaternion(Quaternion(w=0.0, x=0.0, y=0.0, z=0.0))
         self.position = Point(x=0.0, y=0.0, z=0.0)
-        self.orientation = Quaternion(w=0.0, x=0.0, y=0.0, z=0.0)
+        self.orientation = euler_from_quaternion(Quaternion(w=0.0, x=0.0, y=0.0, z=0.0))
 
     def get_Odom(self, msg):
         self.position = msg.pose.pose.position
-        self.orientation = msg.pose.pose.orientation
+        self.orientation = euler_from_quaternion(msg.pose.pose.orientation)
         print("Position =", self.position, " Orientation =", self.orientation)
     
     def drive_one_meter(self):
@@ -44,7 +46,7 @@ class Square(Node):
             return Vector3(x=SPEED, y=0.0, z=0.0)
 
     def turn_ninety_deg(self):
-        if self.start_orientation.z - self.orientation.z >= (math.sqrt(2)/2):
+        if abs(self.start_orientation.z - self.orientation.z) >= math.pi/2:
             self.movement_flag = 1
             self.start_orientation = self.orientation
             return Vector3(x=0.0, y=0.0, z=0.0)
@@ -62,7 +64,32 @@ class Square(Node):
         cmd_vel = Twist(linear=linear,angular=angular)
         self.publisher.publish(cmd_vel)
 
-
+def euler_from_quaternion(quaternion):
+        """
+        From https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/ 
+        Convert a quaternion into euler angles (roll, pitch, yaw)
+        roll is rotation around x in radians (counterclockwise)
+        pitch is rotation around y in radians (counterclockwise)
+        yaw is rotation around z in radians (counterclockwise)
+        """
+        x = quaternion.x
+        y = quaternion.y
+        z = quaternion.z
+        w = quaternion.w
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll_x = math.atan2(t0, t1)
+     
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch_y = math.asin(t2)
+     
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw_z = math.atan2(t3, t4)
+     
+        return Vector3(x=roll_x, y=pitch_y, z=yaw_z) # in radians
 
 def main(args=None):
     rclpy.init(args=args)      # Initialize communication with ROS
