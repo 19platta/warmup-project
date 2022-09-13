@@ -24,7 +24,8 @@ setup(
             'messenger_two = warmup_project.messenger_two:main',
             'drive_n_stop = warmup_project.drive_n_stop:main',
             'teleop = warmup_project.teleop:main',
-            'wall_follower = warmup_project.wall_follower:main'
+            'wall_follower = warmup_project.wall_follower:main',
+            'drive_square = warmup_project.drive_square:main'
         ],
     },
 )
