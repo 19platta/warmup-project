@@ -12,7 +12,7 @@ class SimpleVisualizationPublisher(Node):
     
     def publish_marker(self):
         marker = Marker()
-        marker.header.frame_id = "base_link";
+        marker.header.frame_id = "odom";
         marker.header.stamp = self.get_clock().now().to_msg()
         marker.ns = "my_namespace";
         marker.id = 0
