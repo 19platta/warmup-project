@@ -1,3 +1,7 @@
+'''
+Ros Node which follows a wall on the left side of the neato
+'''
+
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import LaserScan
@@ -21,23 +25,27 @@ class SendTwist(Node):
 
 
     def run_loop(self):
-        #should have a check for if dont see the wall here
-        try:
-            print(self.front_dist, self.back_dist, "front, bakc")
-            if self.front_dist != 0 and self.back_dist != 0:
-                turn_angle = float(-1*self.front_dist + self.back_dist)*turn_multiplier
-                print('turn ang ', turn_angle)
-            else:
-                turn_angle=0.0
-        except:
-            turn_angle = 0.0
+        '''
+        Function which gets called repeatedly until node is ended
+        Determines neato direction based on the wall to the left
+        and publishes velocity accordingly.
+        '''
+        #only try to turn if we are seeing a wall at both front and back
+        if self.front_dist != 0 and self.back_dist != 0:
+            turn_angle = float(-1*self.front_dist + self.back_dist)*turn_multiplier
+        else:
+            turn_angle=0.0
+
+        #set robot to always drive forwards and turn based on wall location
         linear = Vector3(x=0.15,y=0.0,z=0.0)
         angular = Vector3(x=0.0,y=0.0,z=turn_angle)
 
+        #publish velocity
         cmd_vel = Twist(linear=linear,angular=angular)
         self.publisher.publish(cmd_vel)
 
     def get_laser(self,msg):
+        #get laser distance at n degrees in front and behind perpendicular to robot
         self.front_dist = msg.ranges[270+angle_from_perp]
         self.back_dist = msg.ranges[270-angle_from_perp]
 

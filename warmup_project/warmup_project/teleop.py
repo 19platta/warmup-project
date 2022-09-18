@@ -1,3 +1,11 @@
+'''
+Neato teleop control node.
+
+Uses 'w' to move forward, 's' to move back, 'a' to turn left, and 'd' to turn right
+Press any other key to stop and ctrl-c to end teleop control
+'''
+
+
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 from neato2_interfaces.msg import Bump
@@ -40,10 +48,6 @@ class TeleopControl(Node):
         '''
         Function which gets called repeatedly until node is ended
         Determines direction to move based on key press and publishes neato velocity
-
-        Uses 'w' to move forward, 's' to move back, 'a' to turn left, and 'd' to turn right
-        Press any other key to stop and ctrl-c to end teleop control
-
         '''
         while self.key != '\x03':
             #set velocity to 0 unless a direction key is pressed
