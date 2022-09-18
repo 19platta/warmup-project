@@ -8,11 +8,21 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 from matplotlib import pyplot as plt
+from visualization_msgs.msg import Marker
+
 
 import math 
+import numpy as np
 
 rolling_avg_len = 3
 new_cluster_dist = .5
+
+def pol2cart(phi, rho):
+    ''' from - https://stackoverflow.com/questions/20924085/python-conversion-between-coordinates 
+    '''
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
+    return(x, y)
 
 class SendTwist(Node):
     def __init__(self):
@@ -20,13 +30,40 @@ class SendTwist(Node):
         # Create a timer that fires ten times per second
         timer_period = 0.1
         self.angle_to_go = 0
+        self.person_dist = 0
         self.timer = self.create_timer(timer_period, self.run_loop)
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.vis_publisher = self.create_publisher(Marker, 'visualization_marker', 10)
         self.subscriber = self.create_subscription(LaserScan, 'scan', self.get_laser, 10)
 
 
+    def publish_marker(self,x,y):
+        marker = Marker()
+        marker.header.frame_id = "odom"
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = "my_namespace"
+        marker.id = 0
+
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 1.0
+        marker.pose.orientation.x = 0.0
+        marker.pose.orientation.y = 0.0
+        marker.pose.orientation.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        marker.color.a = 1.0 
+        marker.color.r = 0.9
+        marker.color.g = 0.0
+        marker.color.b = 1.0
+
+        self.vis_publisher.publish(marker)
+
     def run_loop(self):
-        print(self.angle_to_go)
 
         angular_speed = .074*math.sqrt(abs(self.angle_to_go))
         if self.angle_to_go < 0:
@@ -43,6 +80,10 @@ class SendTwist(Node):
 
         cmd_vel = Twist(linear=linear,angular=angular)
         self.publisher.publish(cmd_vel)
+
+        x,y = pol2cart(self.angle_to_go, self.person_dist)
+        print('x',x,'y',y,'theta',self.angle_to_go,'person', self.person_dist)
+        self.publish_marker(x,y)
 
     def get_laser(self,msg):
         #from https://scikit-learn.org/stable/auto_examples/linear_model/plot_ransac.html
@@ -69,10 +110,10 @@ class SendTwist(Node):
                 current_cluster['end'] = curr_idx-180
                 if current_cluster['end'] - current_cluster['start'] > largest_cluster['end'] - largest_cluster['start']:
                     largest_cluster = current_cluster
-        print(largest_cluster)
         self.angle_to_go = mean([largest_cluster['end'],largest_cluster['start']])
         if self.angle_to_go > 360:
             self.angle_to_go = self.angle_to_go - 360
+        self.person_dist = shifted_ranges[round(self.angle_to_go)]
 
 
 def main(args=None):

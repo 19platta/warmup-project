@@ -39,7 +39,6 @@ class SendTwist(Node):
 
     def get_laser(self,msg):
         angle = round(-self.curr_orientation.z / math.pi * 180)
-        print("angle =", angle, "value = ", msg.ranges[angle])
         if msg.ranges[angle] < COLLIDE_DIST:
             self.obstacle_detected = 1
         else:
@@ -49,10 +48,10 @@ class SendTwist(Node):
         if abs(self.start_orientation.z - self.curr_orientation.z) >= math.pi/2:
             self.turn_flag = 0
             self.turn_count += 1
-            if self.turn_count % 2 == 1:
-                self.turn_dir == 1
+            if self.turn_count % 4 < 2:
+                self.turn_dir = 1
             else:
-                self.turn_dir == -1
+                self.turn_dir = -1
             self.start_orientation = self.curr_orientation
             return Vector3(x=0.0, y=0.0, z=0.0)
         else: 
@@ -60,7 +59,6 @@ class SendTwist(Node):
 
     def run_loop(self):
         # if we're heading in the right direction, go until we hit an obstacle, then turn
-        print(self.turn_flag)
         if abs(self.curr_orientation.z) < MARGIN:
             if self.obstacle_detected:
                 self.turn_flag = 1
