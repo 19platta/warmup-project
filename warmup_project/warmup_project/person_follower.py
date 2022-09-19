@@ -14,7 +14,7 @@ from visualization_msgs.msg import Marker
 import math 
 import numpy as np
 
-rolling_avg_len = 3
+len_to_look = 1
 new_cluster_dist = .5
 
 def pol2cart(phi, rho):
@@ -24,13 +24,34 @@ def pol2cart(phi, rho):
     y = rho * np.sin(phi)
     return(x, y)
 
+class Cluster():
+    def __init__(self, start, end) -> None:
+        self.start_idx = start - -180
+        self.end_idx = end - 180
+        self.values = []
+    
+    def get_mean(self):
+        return mean(self.values)
+
+    def get_midpoint(self):
+        return (self.start_idx + self.end_idx) // 2
+
+    def set_end_idx(self, idx):
+        self.end_idx = idx - 180
+    
+    def get_cluster_len(self):
+        return self.end_idx - self.start_idx
+
+    def get_cluster_avg(self):
+        return mean(self.values)
+
 class SendTwist(Node):
     def __init__(self):
         super().__init__('send_message_node')
         # Create a timer that fires ten times per second
         timer_period = 0.1
-        self.angle_to_go = 0
-        self.person_dist = 0
+        self.angle_to_go = 0 
+        self.person_dist = 0 
         self.timer = self.create_timer(timer_period, self.run_loop)
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
         self.vis_publisher = self.create_publisher(Marker, 'visualization_marker', 10)
@@ -89,14 +110,13 @@ class SendTwist(Node):
         #from https://scikit-learn.org/stable/auto_examples/linear_model/plot_ransac.html
         shifted_ranges = msg.ranges[180:]
         shifted_ranges.extend(msg.ranges[:180])
+    
+        clusters = [Cluster(0, 0)]
 
-        current_cluster = {'start': rolling_avg_len+1, 'end': rolling_avg_len+1}
-        largest_cluster = {'start': rolling_avg_len+1, 'end': rolling_avg_len+1}
+        for curr_idx in range(len_to_look + 1, len(msg.ranges) - len_to_look):
 
-        for curr_idx in range((rolling_avg_len//2) + 1, len(msg.ranges)-rolling_avg_len//2):
-
-            last_avg = mean(shifted_ranges[(curr_idx-(rolling_avg_len//2))-1 : (curr_idx+(rolling_avg_len//2))])
-            curr_avg = mean(shifted_ranges[(curr_idx-rolling_avg_len//2) : (curr_idx+rolling_avg_len//2) + 1])
+            last_avg = mean(shifted_ranges[curr_idx - len_to_look - 1 : curr_idx + len_to_look])
+            curr_avg = mean(shifted_ranges[curr_idx - len_to_look : curr_idx + len_to_look + 1])
             if last_avg == float('inf'):
                 last_avg = 0
             if curr_avg == float('inf'):
@@ -104,12 +124,14 @@ class SendTwist(Node):
 
             if abs(curr_avg - last_avg) > new_cluster_dist :
                 #make new cluster
-                current_cluster['start'] = curr_idx-180
-                current_cluster['end'] = curr_idx-180
+                clusters.append(Cluster(curr_idx, curr_idx))
             elif curr_avg > .1:
-                current_cluster['end'] = curr_idx-180
-                if current_cluster['end'] - current_cluster['start'] > largest_cluster['end'] - largest_cluster['start']:
-                    largest_cluster = current_cluster
+                clusters[-1].set_end_idx(curr_idx)
+                clusters[-1].values.append(shifted_ranges[curr_idx])
+        
+        # do largest cluster calculation here
+        sorted_clusters = clusters.sort(key=Cluster.get_cluster_avg, reverse=True)
+
         self.angle_to_go = mean([largest_cluster['end'],largest_cluster['start']])
         if self.angle_to_go > 360:
             self.angle_to_go = self.angle_to_go - 360
