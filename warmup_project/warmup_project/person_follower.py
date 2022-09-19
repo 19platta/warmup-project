@@ -1,3 +1,4 @@
+from optparse import Values
 from statistics import mean
 from turtle import st
 from geometry_msgs.msg import Twist
@@ -20,13 +21,13 @@ new_cluster_dist = .5
 def pol2cart(phi, rho):
     ''' from - https://stackoverflow.com/questions/20924085/python-conversion-between-coordinates 
     '''
-    x = rho * np.cos(phi)
-    y = rho * np.sin(phi)
+    x = rho * np.cos(np.deg2rad(phi))
+    y = rho * np.sin(np.deg2rad(phi))
     return(x, y)
 
 class Cluster():
     def __init__(self, start, end) -> None:
-        self.start_idx = start - -180
+        self.start_idx = start - 180
         self.end_idx = end - 180
         self.values = []
     
@@ -43,7 +44,9 @@ class Cluster():
         return self.end_idx - self.start_idx
 
     def get_cluster_avg(self):
-        return mean(self.values)
+        if self.values:
+            return mean(self.values)
+        return 0
 
 class SendTwist(Node):
     def __init__(self):
@@ -69,7 +72,7 @@ class SendTwist(Node):
         marker.action = Marker.ADD
         marker.pose.position.x = x
         marker.pose.position.y = y
-        marker.pose.position.z = 1.0
+        marker.pose.position.z = 0.0
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
@@ -130,12 +133,13 @@ class SendTwist(Node):
                 clusters[-1].values.append(shifted_ranges[curr_idx])
         
         # do largest cluster calculation here
-        sorted_clusters = clusters.sort(key=Cluster.get_cluster_avg, reverse=True)
-
-        self.angle_to_go = mean([largest_cluster['end'],largest_cluster['start']])
-        if self.angle_to_go > 360:
-            self.angle_to_go = self.angle_to_go - 360
-        self.person_dist = shifted_ranges[round(self.angle_to_go)]
+        clusters.sort(key=Cluster.get_cluster_avg, reverse=True)
+        for cluster in clusters:
+            # if most of the values are larger than 0, cluster is valid
+            if cluster.get_cluster_avg() > 0.1:
+                self.angle_to_go = cluster.get_midpoint()
+                self.person_dist = cluster.get_cluster_avg()
+                break
 
 
 def main(args=None):
