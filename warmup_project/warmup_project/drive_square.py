@@ -1,3 +1,7 @@
+'''
+Navigates the Neato in a 1x1 meter square using odometry.
+'''
+
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 from neato2_interfaces.msg import Bump
@@ -55,6 +59,7 @@ class Square(Node):
         
 
     def run_loop(self):
+        #switch between states based on the state flag
         if self.movement_flag:
             linear = self.drive_one_meter()
             angular = Vector3(x=0.0,y=0.0,z=0.0)

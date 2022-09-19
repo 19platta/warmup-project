@@ -1,3 +1,7 @@
+'''
+Avoid obstacles by navigating in Manhattan distances and in a slalom pattern
+'''
+
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import LaserScan
@@ -11,7 +15,7 @@ ROTATION_SPEED = -0.5
 COLLIDE_DIST = 1.0
 MARGIN = 0.1
 
-class SendTwist(Node):
+class NeatoTrajectory(Node):
     def __init__(self):
         super().__init__('send_message_node')
         # Create a timer that fires ten times per second
@@ -34,10 +38,16 @@ class SendTwist(Node):
         self.curr_orientation = euler_from_quaternion(Quaternion(w=0.0, x=0.0, y=0.0, z=0.0))
 
     def get_odom(self, msg):
+        '''
+        Find our current position (cartesian) and orientation (Euler angles)
+        '''
         self.curr_position = msg.pose.pose.position
         self.curr_orientation = euler_from_quaternion(msg.pose.pose.orientation)
 
     def get_laser(self,msg):
+        '''
+        Determine if there is an obstacle in the direction of our heading
+        '''
         angle = round(-self.curr_orientation.z / math.pi * 180)
         if msg.ranges[angle] < COLLIDE_DIST:
             self.obstacle_detected = 1
@@ -45,6 +55,10 @@ class SendTwist(Node):
             self.obstacle_detected = 0
 
     def turn_ninety_deg(self):
+        '''
+        Turns the robot 90 degrees in a direction
+        Direction is determined by current part of the slalom path and if facing obstacle or avoiding
+        '''
         if abs(self.start_orientation.z - self.curr_orientation.z) >= math.pi/2:
             self.turn_flag = 0
             self.turn_count += 1
@@ -109,7 +123,7 @@ def euler_from_quaternion(quaternion):
 
 def main(args=None):
     rclpy.init(args=args)      # Initialize communication with ROS
-    node = SendTwist()   # Create our Node
+    node = NeatoTrajectory()   # Create our Node
     rclpy.spin(node)           # Run the Node until ready to shutdown
     rclpy.shutdown()           # cleanup
 

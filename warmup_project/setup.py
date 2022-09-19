@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'messenger = warmup_project.messenger:main',
-            'messenger_two = warmup_project.messenger_two:main',
+            'visualization_practice = warmup_project.visualization_practice:main',
             'drive_n_stop = warmup_project.drive_n_stop:main',
             'teleop = warmup_project.teleop:main',
             'wall_follower = warmup_project.wall_follower:main',

@@ -8,8 +8,8 @@ from sensor_msgs.msg import LaserScan
 import rclpy
 from rclpy.node import Node
 
-turn_multiplier = 5
-angle_from_perp = 10
+TURN_MULTIPLIER = 5
+DEGREES_FROM_ORTHO = 10
 
 class SendTwist(Node):
     def __init__(self):
@@ -32,7 +32,7 @@ class SendTwist(Node):
         '''
         #only try to turn if we are seeing a wall at both front and back
         if self.front_dist != 0 and self.back_dist != 0:
-            turn_angle = float(-1*self.front_dist + self.back_dist)*turn_multiplier
+            turn_angle = float(-1*self.front_dist + self.back_dist)*TURN_MULTIPLIER
         else:
             turn_angle=0.0
 
@@ -46,8 +46,8 @@ class SendTwist(Node):
 
     def get_laser(self,msg):
         #get laser distance at n degrees in front and behind perpendicular to robot
-        self.front_dist = msg.ranges[270+angle_from_perp]
-        self.back_dist = msg.ranges[270-angle_from_perp]
+        self.front_dist = msg.ranges[270+DEGREES_FROM_ORTHO]
+        self.back_dist = msg.ranges[270-DEGREES_FROM_ORTHO]
 
 
 def main(args=None):
