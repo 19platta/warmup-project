@@ -22,7 +22,7 @@ We decided to use odometry over a timing-based system for higher accuracy, and b
 ### Wall following
 For our wall follower we look at the distances measured by the lidar at angles 260 and 280 degrees in the robots coordinate frame. We then turn depending on which of those angles is larger, and continue straight if they are equal. The diagram below shows what this might look like.
 
-![](wall_following_diagram.png)
+![](images/wall_following_diagram.png)
 
 We want the distance to the wall at the side corresponsing to angles theta 1 and 2 to be equal, because that means the side of the robot is parallel to the wall. In the diagram, the theta 1 side has a much longer distance to the wall than the theta 2 side, so we need to turn towards theta 1 (clockwise) to even them out. The rate of turning is proportional to the distance needed to turn. 
 
@@ -35,7 +35,7 @@ Our person-following code is our most complex algorithmically. It take a full 36
 
 We then compare our cluster sizes. A larger object should take up more angles in the lidar. In the diagram below, the square cluster would span four different points while the triangle spans only one. We would therefore choose to follow the square because it is larger. We set our robot heading for halfway between the start and end angle of the cluster. 
 
-![](clustering_diagram.png)
+![](images/clustering_diagram.png)
 
 In order to avoid following a large chunk of nothing, like the space behind the robot in the diagram, we take the average of the distances in the cluster. If the average distance is too close to zero, we discard that cluster and take the next largest. 
 
@@ -46,7 +46,7 @@ Our linear speed is inversely proportional to the angle we are heading, because 
 ### Obstacle avoidance
 We assume that the point we're trying to get to is in the direction of our initial heading. The robot will go straight until the lidar detects an object ahead. It will turn 90 degrees, drive straight until it no longer detects that object on its side, then rotate back 90 degrees. Because, given multiple obstacles, this would result in the robot heading further and further away from its initial line (see A in the diagram below), we alternate the direction of turning with each obstacle, making a sort of slalom (B in the diagram). 
 
-![](trajectories.png)
+![](images/trajectories.png)
 
 One drawback of this approach is that shapes must be rectangular. If they are circular, the robot may approach, rotate 90 degrees, think the object is gone, and rotate back. However, if it has not gone all the way past, it may turn again to avoid the obstacle. Since the direction of turning is now flipped, this would cause it to turn directly into the obstacle (C in the diagram). We chose to make essentially a slalom robot, but we recognize that this is a limitation of our approach. 
 
@@ -59,7 +59,7 @@ The behaviors can be visualized with the following diagram:
 
 The state diagram is as follows: 
 
-![](state_diagram.png)
+![](images/state_diagram.png)
 
 One decision that we made was to move in a circle rather than just spin in place. We decided that this behavior would appear more anthropomorphic. We also decided to only search for targets in front of the robot, simulating a real creature that cannot see all the way around itself.  
 
