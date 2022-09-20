@@ -56,7 +56,6 @@ We decided to implement a new behavior for the Neato, which we are calling "Atta
 The behaviors can be visualized with the following diagram: 
 
 ![](eyes.png)
-
 The state diagram is as follows: 
 
 ![](images/state_diagram.png)
@@ -64,7 +63,11 @@ The state diagram is as follows:
 One decision that we made was to move in a circle rather than just spin in place. We decided that this behavior would appear more anthropomorphic. We also decided to only search for targets in front of the robot, simulating a real creature that cannot see all the way around itself.  
 
 ## Code Structure
+Each behavior is implemented with a Node class. 
+
 ## Challenges
+* Visualizations didn't work super well for us
+* We had a lot of flags and basically spent a lot of time trying to figure out how many times we were multiplying by -1. 
 ## Future Improvements 
 * Tweak our obstacle avoidance algorithm to work with different shapes. We could do this by tuning some parameters, or, more likely, adding different arguments. 
 * Use Bump to detect hit in finite state controller
