@@ -108,8 +108,8 @@ class NeatoTrajectory(Node):
             y (float) - person y location relative to neato in meters
         '''
         marker = Marker()
-        marker.header.frame_id = "odom"
-        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.header.frame_id = "base_link"
+        # marker.header.stamp = self.get_clock().now().to_msg()
         marker.ns = "my_namespace"
         marker.id = 0
 
