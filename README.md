@@ -63,12 +63,17 @@ The state diagram is as follows:
 One decision that we made was to move in a circle rather than just spin in place. We decided that this behavior would appear more anthropomorphic. We also decided to only search for targets in front of the robot, simulating a real creature that cannot see all the way around itself.  
 
 ## Code Structure
-Each behavior is implemented with a Node class. 
+Each behavior is implemented with a class that inherits from the Node class. In our person-following implementation we created a helper class for the clusters detected by the lidar, because we wanted to store properties like which angle the clusters started and stopped at and what the values inside were. This also allowed us to use handy methods that adjusted for any offsets, so we didn't have to, for example, remember to subtract a certain number from every measurement. 
 
 ## Challenges
-* Visualizations didn't work super well for us
-* We had a lot of flags and basically spent a lot of time trying to figure out how many times we were multiplying by -1. 
+* Visualizations
+    * We had a lot of trouble getting visualizations to show up in RViz. We got it to work by publishing to the incorrect frame. However, we didn't realize how frames work, so this meant our visualization was relative to the robot, rather than the global coordinate system. Eventually (with help) we figured out that a discrepancy in timing between frames was the problem, but if we had been able to use visualization properly we might have been able to troubleshoot more effectively.
+* Poor code structure
+    * Our person following code was seeing some strange problems for a long time. The robot was heading in the general direction of a mass, but veering off to one side. It seemed to almost-but-not-quite work no matter what we did to it. Our code was full of lots of math not stored in variables, and was generally very hard to read. Once we went through and rewrote it more robustly and legibly, the problem went away. We're still not sure exactly what it was, but we learned the importance of being able to read and understand your code, and structuring it well. 
 ## Future Improvements 
-* Tweak our obstacle avoidance algorithm to work with different shapes. We could do this by tuning some parameters, or, more likely, adding different arguments. 
-* Use Bump to detect hit in finite state controller
+If we had more time, there are several places we would like to improve:
+* Make our teleop mode more robust, so the robot moves when a key is pushed and stops when the key is released (as opposed to now, where it moves when a key is pushed and continues moving in that direction until another key is pushed). This turned our to be surprisingly complex and we decided our energy would be better focused on making sure we adequately completed the other behaviors. 
+* Make our wall following work on multiple sides, add support for going around corners, and add a wall detection and approach phase. This might be easier now that we have practice implementing finite state control. 
+* Tweak our obstacle avoidance algorithm to work with different shapes. We could do this by tuning some parameters, or, more likely, adding command line arguments to specify whether to slalom or not. We could also try a more robust algorithm, or try to account for some more edge cases.
+* Use Bump to detect a hit in finite state controller. Right now the robot just goes until the lidar says it's some distance from the target. The distance is less than the offset from the lidar to the front of the robot, but using the bump sensor would be more reliable. 
 ## Key Takeaways 
